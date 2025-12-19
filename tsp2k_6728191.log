@@ -1,0 +1,3 @@
+critical libmamba Cannot activate, prefix does not exist at: '/sfs/ceph/standard/phys56xx/miniforge3/envs/phys56xx'
+make: Nothing to be done for 'default'.
+[2025-12-16T14:45:39.839] error: *** JOB 6728191 ON udc-aw33-14c0 CANCELLED AT 2025-12-16T14:45:39 DUE to SIGNAL Terminated ***

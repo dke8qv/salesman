@@ -6,6 +6,10 @@
 #include <ctime>
 #include <iomanip>
 #include <chrono>
+#include <algorithm>
+#include <vector>
+
+
 
 
 using namespace std;
@@ -92,6 +96,35 @@ void Method2(COORD* cities, int ncity) {
   }
 }
 
+
+
+double EstimateT0(const COORD* cur, int ncity, double Ecur,
+                  int nProbe, double factor) {
+  static COORD trial[3000]; // avoid big stack allocations
+
+  std::vector<double> dEs;
+  dEs.reserve(nProbe);
+
+  for (int k = 0; k < nProbe; k++) {
+    CopyRoute(cur, trial, ncity);
+
+    if (urand() < 0.05) Method1(trial, ncity);
+    else Method2(trial, ncity);
+
+    double Etrial = TotalDistance(trial, ncity);
+    double dE = Etrial - Ecur;
+    if (dE > 0.0) dEs.push_back(dE);
+  }
+
+  if (dEs.empty()) return 1.0;
+
+  std::sort(dEs.begin(), dEs.end());
+  int idx = (int)(0.90 * (dEs.size() - 1));  // 90th percentile
+  double dE90 = dEs[idx];
+  return factor * dE90;
+
+}
+
 int main(int argc, char* argv[]) {
   if (argc < 2) {
     cerr << "Usage: " << argv[0] << " cities.dat [routeout.dat] [schedule.csv]\n";
@@ -112,7 +145,13 @@ int main(int argc, char* argv[]) {
   int ncity = GetData(infile, cur, NMAX);
   cout << "Read " << ncity << " cities from data file\n";
 
+  auto t0 = std::chrono::steady_clock::now();
+
   double Ecur = TotalDistance(cur, ncity);
+  int nProbe = std::min(20000, 20 * ncity); // keep it cheap
+  double T0 = EstimateT0(cur, ncity, Ecur, nProbe, 1.2);
+  cout << "Auto T0 (km): " << T0 << "  (probe moves=" << nProbe << ")\n";
+
   double Ebest = Ecur;
   CopyRoute(cur, best, ncity);
 
@@ -121,8 +160,11 @@ int main(int argc, char* argv[]) {
 
   // ---- SA parameters (tune these)
   const int steps = 12000000;        // total Metropolis trials
-  double T0 = 5000.0;            // start temperature
-  double alpha = 0.9999995;        // cooling per step (very gentle)
+  //double T0 = 5000.0;            // start temperature
+  //double alpha = 0.9999995;        // cooling per step 
+    double Tf = 1.0; // target final temperature (km)
+    double alpha = exp(log(Tf / T0) / steps);
+
   int printEvery = 200000;
   int schedEvery = 2000;
 
@@ -131,7 +173,7 @@ int main(int argc, char* argv[]) {
 
   double T = T0;
 
-  auto t0 = std::chrono::steady_clock::now();
+
 
   for (int s = 0; s < steps; s++) {
     // Make a trial configuration from current

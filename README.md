@@ -19,13 +19,15 @@ NA = North America, World = Mercator projection of the whole earth
 
 
 ###############Results (round-trip distance in km)###################
-cities150 317298.645 48027.565 131.128
-cities1k 732177.737 111461.552 1100.932
-cities2k 10187617.637342 372564.206 1785.119
+cities150 317298.645290km 48487.414km 131.978s 
+cities1k 732177.736605km 102861.533km 912.177s
+cities2k 10187617.637342km 347883.227km 1878.256s
 
 
 
 ##########How to run########################
+
+make
 
 1] cities150: ./sales cities150.dat route150.dat an150.csv OR sbatch run150.slurm
 
@@ -38,12 +40,10 @@ cities2k 10187617.637342 372564.206 1785.119
 #######################Plotting (general)###############
 
 ####Route plot (map + initial and optimized path):
-    python routeplot.py <input.dat> <route_out.dat> --out <plot.pdf> \
-     --before <INITIAL_KM> --after <BEST_KM>
+    python routeplot.py <input.dat> <route_out.dat> --out <plot.pdf> --before <INITIAL_KM> --after <BEST_KM>
 
 For the world view (2k),:
-    python routeplot.py cities2k.dat route2k.dat -w --out cities2k.pdf \
-      --before <INITIAL_KM> --after <BEST_KM>
+    python routeplot.py cities2k.dat route2k.dat -w --out cities2k.pdf --before <INITIAL_KM> --after <BEST_KM>
 
 
 
@@ -65,4 +65,4 @@ Always accept if the trial tour is shorter: ΔE ≤ 0
 Otherwise accept with probability exp(−ΔE / T)
 Cooling schedule: exponential cooling T ← αT starting from T0, with a gentle α ≈ 1.
 During the run I record T,current_km,best_km to a CSV file for plotting the annealing schedule.
-
+T0 is chosen automatically by probing uphill dE values from trial moves and setting T0 = factor × (90th percentile of uphill dE).
