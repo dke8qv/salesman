@@ -148,7 +148,7 @@ int main(int argc, char* argv[]) {
   auto t0 = std::chrono::steady_clock::now();
 
   double Ecur = TotalDistance(cur, ncity);
-  int nProbe = std::min(20000, 20 * ncity); // keep it cheap
+  int nProbe = std::min(20000, 20 * ncity); 
   double T0 = EstimateT0(cur, ncity, Ecur, nProbe, 1.2);
   cout << "Auto T0 (km): " << T0 << "  (probe moves=" << nProbe << ")\n";
 
